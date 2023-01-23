@@ -432,6 +432,9 @@ func (pw *pushWriter) Commit(ctx context.Context, size int64, expected digest.Di
 		return fmt.Errorf("pipe error before commit: %w", err)
 	}
 
+	if pw.pipe == nil {
+		panic("impossible")
+	}
 	if err := pw.pipe.Close(); err != nil {
 		return err
 	}
@@ -442,6 +445,7 @@ func (pw *pushWriter) Commit(ctx context.Context, size int64, expected digest.Di
 		if err != nil {
 			return err
 		}
+		panic("impossible")
 	case resp = <-pw.respC:
 		defer resp.Body.Close()
 	case p, ok := <-pw.pipeC:
@@ -465,6 +469,7 @@ func (pw *pushWriter) Commit(ctx context.Context, size int64, expected digest.Di
 			pw.tracker.SetStatus(pw.ref, status)
 			return content.ErrReset
 		}
+		panic("impossible")
 	}
 
 	// 201 is specified return status, some registries return
