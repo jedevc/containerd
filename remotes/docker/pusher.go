@@ -274,6 +274,7 @@ func (p dockerPusher) push(ctx context.Context, desc ocispec.Descriptor, ref str
 	go func() {
 		resp, err := req.doWithRetries(ctx, nil)
 		if err != nil {
+			fmt.Println("error haha:", err)
 			pushw.setError(err)
 			pushw.Close()
 			return
@@ -282,6 +283,7 @@ func (p dockerPusher) push(ctx context.Context, desc ocispec.Descriptor, ref str
 		switch resp.StatusCode {
 		case http.StatusOK, http.StatusCreated, http.StatusNoContent:
 		default:
+			panic("unexpected status code in gofunc: + " + resp.Status)
 			err := remoteserrors.NewUnexpectedStatusErr(resp)
 			log.G(ctx).WithField("resp", resp).WithField("body", string(err.(remoteserrors.ErrUnexpectedStatus).Body)).Debug("unexpected response")
 			pushw.setError(err)
@@ -372,6 +374,7 @@ func (pw *pushWriter) Write(p []byte) (n int, err error) {
 			if !ok {
 				return 0, io.ErrClosedPipe
 			}
+			fmt.Println("closing pipe with ErrReset in Write")
 			pw.pipe.CloseWithError(content.ErrReset)
 			pw.pipe = p
 
@@ -407,6 +410,7 @@ func (pw *pushWriter) Close() error {
 			status.ErrClosed = errors.New("closed incomplete writer")
 			pw.tracker.SetStatus(pw.ref, status)
 		}
+		fmt.Println("closing pipe in pw.Close")
 		return pw.pipe.Close()
 	}
 	return nil
@@ -435,6 +439,7 @@ func (pw *pushWriter) Commit(ctx context.Context, size int64, expected digest.Di
 	if pw.pipe == nil {
 		panic("impossible")
 	}
+	fmt.Println("closing pipe in pw.Commit")
 	if err := pw.pipe.Close(); err != nil {
 		return err
 	}
@@ -455,6 +460,7 @@ func (pw *pushWriter) Commit(ctx context.Context, size int64, expected digest.Di
 		if !ok {
 			return io.ErrClosedPipe
 		}
+		fmt.Println("closing pipe with ErrReset in pw.Commit")
 		pw.pipe.CloseWithError(content.ErrReset)
 		pw.pipe = p
 		status, err := pw.tracker.GetStatus(pw.ref)
@@ -477,6 +483,7 @@ func (pw *pushWriter) Commit(ctx context.Context, size int64, expected digest.Di
 	switch resp.StatusCode {
 	case http.StatusOK, http.StatusCreated, http.StatusNoContent, http.StatusAccepted:
 	default:
+		panic("unexpected status code: " + resp.Status)
 		return remoteserrors.NewUnexpectedStatusErr(resp)
 	}
 
