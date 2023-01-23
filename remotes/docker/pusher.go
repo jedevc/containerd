@@ -394,6 +394,7 @@ func (pw *pushWriter) Write(p []byte) (n int, err error) {
 	}
 
 	n, err = pw.pipe.Write(p)
+	fmt.Println("writing to pipe", n, err)
 	status.Offset += int64(n)
 	status.UpdatedAt = time.Now()
 	pw.tracker.SetStatus(pw.ref, status)
