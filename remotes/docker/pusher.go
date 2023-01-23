@@ -18,7 +18,6 @@ package docker
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -26,6 +25,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/containerd/containerd/content"
 	"github.com/containerd/containerd/errdefs"
@@ -365,17 +366,19 @@ func (pw *pushWriter) Write(p []byte) (n int, err error) {
 	if pw.pipe == nil {
 		p, ok := <-pw.pipeC
 		if !ok {
-			return 0, io.ErrClosedPipe
+			fmt.Println("closed pipe", errors.WithStack(io.ErrClosedPipe))
+			return 0, errors.WithStack(io.ErrClosedPipe)
 		}
 		pw.pipe = p
 	} else {
 		select {
 		case p, ok := <-pw.pipeC:
 			if !ok {
-				return 0, io.ErrClosedPipe
+				fmt.Println(errors.WithStack(io.ErrClosedPipe))
+				return 0, errors.WithStack(io.ErrClosedPipe)
 			}
 			fmt.Println("closing pipe with ErrReset in Write")
-			pw.pipe.CloseWithError(content.ErrReset)
+			fmt.Println("closed pipe", errors.WithStack(io.ErrClosedPipe))
 			pw.pipe = p
 
 			// If content has already been written, the bytes
@@ -458,7 +461,8 @@ func (pw *pushWriter) Commit(ctx context.Context, size int64, expected digest.Di
 		// can complete successfully, but the pipe may have changed. In that case, the
 		// content needs to be reset.
 		if !ok {
-			return io.ErrClosedPipe
+			fmt.Println("closed pipe", errors.WithStack(io.ErrClosedPipe))
+			return errors.WithStack(io.ErrClosedPipe)
 		}
 		fmt.Println("closing pipe with ErrReset in pw.Commit")
 		pw.pipe.CloseWithError(content.ErrReset)
