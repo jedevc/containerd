@@ -17,7 +17,9 @@
 package mount
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/containerd/continuity/fs"
@@ -43,7 +45,13 @@ type Mount struct {
 // present, it assumes that parent mounts come before child mounts.
 func All(mounts []Mount, target string) error {
 	for _, m := range mounts {
+		fmt.Printf("attempting to mount to %s...\n", target)
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "  ")
+		enc.Encode(m)
+
 		if err := m.Mount(target); err != nil {
+			fmt.Println("mount failed!", err)
 			return err
 		}
 	}

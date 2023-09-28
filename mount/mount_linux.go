@@ -235,6 +235,14 @@ func parseMountOptions(options []string) (int, string, bool) {
 		"strictatime":   {false, unix.MS_STRICTATIME},
 		"suid":          {true, unix.MS_NOSUID},
 		"sync":          {false, unix.MS_SYNCHRONOUS},
+		"shared":        {false, unix.MS_SHARED},
+		"rshared":       {false, unix.MS_SHARED | unix.MS_REC},
+		"private":       {false, unix.MS_PRIVATE},
+		"rprivate":      {false, unix.MS_PRIVATE | unix.MS_REC},
+		"slave":         {false, unix.MS_SLAVE},
+		"rslave":        {false, unix.MS_SLAVE | unix.MS_REC},
+		"unbindable":    {false, unix.MS_UNBINDABLE},
+		"runbindable":   {false, unix.MS_UNBINDABLE | unix.MS_REC},
 	}
 	for _, o := range options {
 		// If the option does not exist in the flags table or the flag
