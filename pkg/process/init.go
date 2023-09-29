@@ -83,6 +83,7 @@ func NewRunc(root, path, namespace, runtime string, systemd bool) *runc.Runc {
 		root = RuncRoot
 	}
 	return &runc.Runc{
+		Debug:         true,
 		Command:       runtime,
 		Log:           filepath.Join(path, "log.json"),
 		LogFormat:     runc.JSON,
