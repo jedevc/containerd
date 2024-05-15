@@ -28,6 +28,7 @@ import (
 
 	"github.com/containerd/containerd/log"
 	remoteserrors "github.com/containerd/containerd/remotes/errors"
+	"github.com/containerd/containerd/tracing"
 	"github.com/containerd/containerd/version"
 )
 
@@ -161,6 +162,10 @@ type FetchTokenResponse struct {
 
 // FetchToken fetches a token using a GET request
 func FetchToken(ctx context.Context, client *http.Client, headers http.Header, to TokenOptions) (*FetchTokenResponse, error) {
+	c := *client
+	client = &c
+	tracing.UpdateHTTPClient(client, tracing.Name("remotes.docker.resolver", "HTTPRequest"))
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, to.Realm, nil)
 	if err != nil {
 		return nil, err
