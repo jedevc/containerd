@@ -509,9 +509,13 @@ func (r *dockerBase) request(host RegistryHost, method string, ps ...string) *re
 }
 
 func (r *request) authorize(ctx context.Context, req *http.Request) error {
+	_, authSpan := tracing.StartSpan(ctx, tracing.Name("remotes.docker.resolver", "Authorize"))
+	defer authSpan.End()
+
 	// Check if has header for host
 	if r.host.Authorizer != nil {
 		if err := r.host.Authorizer.Authorize(ctx, req); err != nil {
+			authSpan.SetStatus(err)
 			return err
 		}
 	}
